@@ -9,7 +9,6 @@ let package = Package(
     products: [
         .executable(name: "swift-template-cli", targets: ["SwiftTemplateCli"]),
         .library(name: "SwiftTemplate", targets: ["SwiftTemplate"]),
-        .library(name: "SwiftTemplateDynamic", type: .dynamic, targets: ["SwiftTemplate"]),
     ],
     dependencies: [
         .package(url: "https://github.com/vapor/console-kit", from: "4.1.0"),
