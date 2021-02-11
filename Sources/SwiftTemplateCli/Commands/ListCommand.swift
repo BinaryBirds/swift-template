@@ -28,7 +28,7 @@ final class ListCommand: Command {
     func run(using context: CommandContext, signature: Signature) throws {
         let workPath = Path.home.child(Template.directory)
         let localPath = Path.current.child(Template.directory)
-        self.printTemplates(context: context, at: localPath, style: .success)
-        self.printTemplates(context: context, at: workPath, style: .info, flag: "(global)")
+        printTemplates(context: context, at: localPath, style: .success)
+        printTemplates(context: context, at: workPath, style: .info, flag: "(global)")
     }
 }

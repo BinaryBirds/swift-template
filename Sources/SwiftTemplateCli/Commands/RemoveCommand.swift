@@ -36,6 +36,7 @@ final class RemoveCommand: Command {
             context.console.error("Error: \(error.localizedDescription)")
         }
     }
+
     func run(using context: CommandContext, signature: Signature) throws {
         let templateName = signature.name + Template.suffix
         let globalPath = Path.home.child(Template.directory).child(templateName)
@@ -53,9 +54,8 @@ final class RemoveCommand: Command {
             return
         }
         for path in toRemove {
-            try self.removeTemplate(at: path, using: context)
+            try removeTemplate(at: path, using: context)
         }
     }
-    
-    
+
 }

@@ -50,16 +50,16 @@ public struct Template {
 
     var parameters: [String: String] {
         [
-            "module": self.context.module,
-            "project": self.context.project,
-            "author": self.context.author,
-            "date": self.dateFormatter.string(from: self.context.date)
+            "module": context.module,
+            "project": context.project,
+            "author": context.author,
+            "date": dateFormatter.string(from: context.date)
         ]
     }
     
     func render(text: String) -> String {
         var result = text
-        for (key, value) in self.parameters {
+        for (key, value) in parameters {
             result = result.replacingOccurrences(of: "{\(key)}", with: value)
         }
         return result
@@ -67,8 +67,8 @@ public struct Template {
 
     func render(input: Path, output: Path) throws {
         let content = try String(contentsOf: input.url)
-        let newName = self.render(text: input.url.lastPathComponent)
-        let newContent = self.render(text: content)
+        let newName = render(text: input.url.lastPathComponent)
+        let newContent = render(text: content)
         let newPath = output.child(newName)
         try newContent.write(to: newPath.url, atomically: true, encoding: .utf8)
     }
@@ -79,21 +79,22 @@ public struct Template {
                 continue
             }
             if item.isDirectory {
-                let childPath = try output.add(item.name)
-                try self.create(input: item, output: childPath)
+                let newName = render(text: item.name)
+                let childPath = try output.add(newName)
+                try create(input: item, output: childPath)
             }
             else {
-                try self.render(input: item, output: output)
+                try render(input: item, output: output)
             }
         }
     }
 
     public func generate(output: String) throws {
-        let inputPath = Path(self.input)
-        let outputPath = try Path(output).add(self.context.module)
+        let inputPath = Path(input)
+        let outputPath = try Path(output).add(context.module)
         let ignorePath = inputPath.child(Template.ignoreFile)
         let ignoreFile = (try? String(contentsOf: ignorePath.url)) ?? ""
         let ignore = ignoreFile.split(separator: "\n").map(String.init).filter { !$0.isEmpty }
-        try self.create(input: inputPath, output: outputPath, ignore: ignore)
+        try create(input: inputPath, output: outputPath, ignore: ignore)
     }
 }
