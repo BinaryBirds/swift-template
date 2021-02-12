@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  Template.swift
+//  SwiftTemplate
 //
 //  Created by Tibor Bodecs on 2020. 04. 19..
 //
@@ -16,17 +16,17 @@ public struct Template {
     public static let ignoreFile = ".swift-template-ignore"
     
     public struct Context {
-        let module: String
+        let name: String
         let project: String
         let author: String
         let date: Date
         
-        public init(module: String,
+        public init(name: String,
                     project: String,
                     author: String,
                     date: Date = .init()
         ) {
-            self.module = module
+            self.name = name
             self.project = project
             self.author = author
             self.date = date
@@ -50,7 +50,10 @@ public struct Template {
 
     var parameters: [String: String] {
         [
-            "module": context.module,
+            "name": context.name,
+            "Name": context.name.capitalizedFirstCharacter,
+            "NAME": context.name.uppercased(),
+
             "project": context.project,
             "author": context.author,
             "date": dateFormatter.string(from: context.date)
@@ -91,7 +94,7 @@ public struct Template {
 
     public func generate(output: String) throws {
         let inputPath = Path(input)
-        let outputPath = try Path(output).add(context.module)
+        let outputPath = try Path(output).add(context.name)
         let ignorePath = inputPath.child(Template.ignoreFile)
         let ignoreFile = (try? String(contentsOf: ignorePath.url)) ?? ""
         let ignore = ignoreFile.split(separator: "\n").map(String.init).filter { !$0.isEmpty }

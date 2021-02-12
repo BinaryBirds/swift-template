@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  InstallCommand.swift
+//  SwiftTemplateCli
 //
 //  Created by Tibor Bodecs on 2020. 04. 19..
 //

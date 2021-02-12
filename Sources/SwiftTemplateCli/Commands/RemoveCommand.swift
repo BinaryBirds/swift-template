@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  
+//  RemoveCommand.swift
+//  SwiftTemplateCli
 //
 //  Created by Tibor Bodecs on 2020. 04. 19..
 //

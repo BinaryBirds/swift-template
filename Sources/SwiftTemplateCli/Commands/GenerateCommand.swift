@@ -1,6 +1,6 @@
 //
 //  GenerateCommand.swift
-//  SwiftTemplate
+//  SwiftTemplateCli
 //
 //  Created by Tibor Bodecs on 2020. 04. 19..
 //
@@ -54,13 +54,13 @@ final class GenerateCommand: Command {
             .filter { ["xcodeproj", "xcworkspace"].contains($0.extension) }
             .map(\.name)
             .first
-
+        
         let author = try? Git().run(.cmd(.config, "--global user.name"))
 
         let loadingBar = context.console.customActivity(frames: ["⠋","⠙","⠹","⠸","⠼","⠴","⠦","⠧","⠇","⠏"].map { $0 + " Generating template..."})
         loadingBar.start()
         let template = Template(input: finalPath.location,
-                                context: .init(module: signature.name,
+                                context: .init(name: signature.name,
                                                project: project ?? signature.name,
                                                author: author ?? "swift-template"))
 
