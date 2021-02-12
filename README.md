@@ -1,4 +1,4 @@
-# swift-template
+# Swift template
 
 A template based generator for Swift projects.
 
@@ -82,9 +82,3 @@ You can use the following parameters in the templates (even in file names):
 - date - current date in local short format
 
 eg. {name} -> MyModule
-
-
-## License
-
-[WTFPL](LICENSE) - Do what the fuck you want to.
-
