@@ -8,6 +8,7 @@
 import Foundation
 import GitKit
 import PathKit
+import PluralKit
 
 public struct Template {
     
@@ -53,6 +54,10 @@ public struct Template {
             "name": context.name,
             "Name": context.name.capitalizedFirstCharacter,
             "NAME": context.name.uppercased(),
+
+            "names": context.name.pluralized(),
+            "Names": context.name.pluralized().capitalizedFirstCharacter,
+            "NAMES": context.name.pluralized().uppercased(),
 
             "project": context.project,
             "author": context.author,

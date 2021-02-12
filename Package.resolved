@@ -38,6 +38,15 @@
         }
       },
       {
+        "package": "plural-kit",
+        "repositoryURL": "https://github.com/binarybirds/plural-kit.git",
+        "state": {
+          "branch": null,
+          "revision": "0bbac9a39a1a89187aebb8684420ca3f10036770",
+          "version": "1.0.0"
+        }
+      },
+      {
         "package": "shell-kit",
         "repositoryURL": "https://github.com/binarybirds/shell-kit",
         "state": {

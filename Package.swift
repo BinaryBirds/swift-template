@@ -16,6 +16,7 @@ let package = Package(
         .package(url: "https://github.com/binarybirds/shell-kit", from: "1.0.0"),
         .package(url: "https://github.com/binarybirds/git-kit", from: "1.0.0"),
         .package(url: "https://github.com/binarybirds/build-kit", from: "1.0.0"),
+        .package(url: "https://github.com/binarybirds/plural-kit.git", from: "1.0.0"),
     ],
     targets: [
         .target(name: "SwiftTemplateCli", dependencies: [
@@ -27,6 +28,7 @@ let package = Package(
             .product(name: "ShellKit", package: "shell-kit"),
             .product(name: "GitKit", package: "git-kit"),
             .product(name: "BuildKit", package: "build-kit"),
+            .product(name: "PluralKit", package: "plural-kit"),
         ]),
         .testTarget(name: "SwiftTemplateTests", dependencies: ["SwiftTemplate"]),
     ]
