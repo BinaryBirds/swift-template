@@ -36,7 +36,7 @@ final class SwiftTemplateTests: XCTestCase {
         let outputPath = Path(output)
         
         /// check if template was created
-        XCTAssertEqual(outputPath.children().map(\.name), ["test"])
+        XCTAssertEqual(outputPath.children().map(\.name), ["Test"])
 
         /// check if test directory was created inside the result project with the right name
         let resultPath = outputPath.child("test")

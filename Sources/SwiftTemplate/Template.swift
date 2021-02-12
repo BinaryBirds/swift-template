@@ -99,7 +99,7 @@ public struct Template {
 
     public func generate(output: String) throws {
         let inputPath = Path(input)
-        let outputPath = try Path(output).add(context.name)
+        let outputPath = try Path(output).add(context.name.capitalizedFirstCharacter)
         let ignorePath = inputPath.child(Template.ignoreFile)
         let ignoreFile = (try? String(contentsOf: ignorePath.url)) ?? ""
         let ignore = ignoreFile.split(separator: "\n").map(String.init).filter { !$0.isEmpty }
