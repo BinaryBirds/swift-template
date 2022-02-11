@@ -101,6 +101,7 @@ public struct Template {
         let ignoreFileContents = (try? String(contentsOf: ignoreFile.url)) ?? ""
         var ignorePaths = ignoreFileContents.split(separator: "\n").map(String.init).filter { !$0.isEmpty }
         ignorePaths.append(Template.ignoreFile)
+        ignorePaths.append(".DS_Store")
         try create(input: inputPath, output: outputPath, ignore: ignorePaths)
     }
 }
