@@ -82,10 +82,7 @@ public struct Template {
     }
     
     func create(input: Path, output: Path, ignore: [String] = []) throws {
-        for item in input.children().filter(\.isVisible) {
-            guard !ignore.contains(item.url.lastPathComponent) else {
-                continue
-            }
+        for item in input.children() where !ignore.contains(item.url.lastPathComponent) {
             if item.isDirectory {
                 let newName = render(text: item.name)
                 let childPath = try output.add(newName)
@@ -100,9 +97,10 @@ public struct Template {
     public func generate(output: String) throws {
         let inputPath = Path(input)
         let outputPath = try Path(output).add(context.name.capitalizedFirstCharacter)
-        let ignorePath = inputPath.child(Template.ignoreFile)
-        let ignoreFile = (try? String(contentsOf: ignorePath.url)) ?? ""
-        let ignore = ignoreFile.split(separator: "\n").map(String.init).filter { !$0.isEmpty }
-        try create(input: inputPath, output: outputPath, ignore: ignore)
+        let ignoreFile = inputPath.child(Template.ignoreFile)
+        let ignoreFileContents = (try? String(contentsOf: ignoreFile.url)) ?? ""
+        var ignorePaths = ignoreFileContents.split(separator: "\n").map(String.init).filter { !$0.isEmpty }
+        ignorePaths.append(Template.ignoreFile)
+        try create(input: inputPath, output: outputPath, ignore: ignorePaths)
     }
 }
