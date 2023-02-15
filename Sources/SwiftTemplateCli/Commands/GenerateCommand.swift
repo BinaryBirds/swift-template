@@ -58,13 +58,24 @@ final class GenerateCommand: Command {
         let author = try? Git().run(.cmd(.config, "--global user.name"))
 
         let loadingBar = context.console.customActivity(frames: ["⠋","⠙","⠹","⠸","⠼","⠴","⠦","⠧","⠇","⠏"].map { $0 + " Generating template..."})
-        loadingBar.start()
-        let template = Template(input: finalPath.location,
-                                context: .init(name: signature.name,
-                                               project: project ?? signature.name,
-                                               author: author ?? "swift-template"))
+        
+        
+        do {
+            loadingBar.start()
+            let template = Template(input: finalPath.location,
+                                    context: .init(name: signature.name,
+                                                   project: project ?? signature.name,
+                                                   author: author ?? "swift-template"))
+            
+            try template.generate(output: output)
+            loadingBar.succeed()
+        }
+        catch {
+            loadingBar.fail()
+            context.console.error("Error: \(error)")
+        }
 
-        try template.generate(output: output)
-        loadingBar.succeed()
+        
+        
     }
 }
