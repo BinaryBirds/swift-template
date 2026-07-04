@@ -22,10 +22,11 @@ struct ListCommand: AsyncParsableCommand {
         abstract: "List installed templates"
     )
 
-    private func printTemplates(at path: FilePath, flag: String = "") throws {
-        for path in try path.children().filter(\.isDirectory)
-            .filter(\.isVisible).sorted(by: { $0.name < $1.name })
-        {
+    private func printTemplates(
+        at path: FilePath,
+        flag: String = ""
+    ) throws {
+        for path in try path.children().filter(\.isDirectory).filter(\.isVisible).sorted(by: { $0.name < $1.name }) {
             let name = path.name.replacingOccurrences(
                 of: Template.suffix,
                 with: ""

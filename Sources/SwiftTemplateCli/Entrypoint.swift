@@ -1,7 +1,7 @@
 import ArgumentParser
 
 @main
-struct SwiftTemplateCLI: AsyncParsableCommand {
+struct Entrypoint: AsyncParsableCommand {
 
     static let configuration = CommandConfiguration(
         commandName: "swift-template",
@@ -13,7 +13,6 @@ struct SwiftTemplateCLI: AsyncParsableCommand {
             UpdateCommand.self,
             CreateCommand.self,
             RemoveCommand.self,
-        ],
-        defaultSubcommand: ListCommand.self
+        ]
     )
 }

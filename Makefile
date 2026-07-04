@@ -1,6 +1,6 @@
 SHELL=/bin/bash
 
-.PHONY: docker
+.PHONY: docker install uninstall
 
 baseUrl = https://raw.githubusercontent.com/BinaryBirds/github-workflows/refs/heads/main/scripts
 
@@ -43,15 +43,10 @@ docker-test:
 	docker build -t swift-template-tests . -f ./docker/tests/dockerfile && docker run --rm swift-template-tests
 
 docker-run:
-	docker run --rm -v $(pwd):/app -it swift:6.1
+	docker run --rm -v $(pwd):/app -it swift:6.2
 
 install:
-	mkdir -p ~/.swift-template
-	swift build -c release
-	install .build/release/swift-template /usr/local/bin/swift-template
+	./scripts/install-swift-template.sh
 
 uninstall:
-	rm -r ~/.swift-template
-	rm /usr/local/bin/swift-template
-
-
+	./scripts/uninstall-swift-template.sh

@@ -12,12 +12,14 @@ cd swift-template
 make install
 ```
 
+This installs the binary to `/usr/local/bin/swift-template` by default and may prompt for `sudo`.
+
 
 ## Usage
 
 Help:
 ```shell
-swift run swift-template-cli --help
+swift run swift-template --help
 ```
 
 Install a new template using a git repository:
