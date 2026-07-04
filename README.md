@@ -7,53 +7,59 @@ A template based generator for Swift projects.
 Clone or download the repository & run:
 
 ```shell
-git clone https://github.com/BinaryBirds/swift-template.git
+git clone https://github.com/BinaryBirds/swift-template
 cd swift-template
 make install
 ```
 
 This installs the binary to `/usr/local/bin/swift-template` by default and may prompt for `sudo`.
 
-
 ## Usage
 
 Help:
+
 ```shell
 swift run swift-template --help
 ```
 
 Install a new template using a git repository:
-``` 
+
+```shell
 swift template install <git-url-of-the-template> [-g]
 
 # install local template
 swift template install https://github.com/corekit/viper-module-template
 
 # install global template
-swift template install https://github.com/feathercms/feather-module-template -g
+swift template install https://github.com/corekit/viper-module-template -g
 ```
 
 Update all templates, both local & global:
+
 ```shell
 swift template update
 ```
 
 List available templates:
+
 ```shell
 swift template list
 ```
 
 Remove template:
+
 ```shell
 swift template remove [template-name]
 ```
 
 Create an empty template project repository:
+
 ```shell
 swift template create [template-name] [-g]
 ```
 
 Generate a new module based on a template
+
 ```shell
 swift template generate [name] --use [template-name] --output [path]
 
@@ -83,4 +89,4 @@ You can use the following parameters in the templates (even in file names):
 - author - based on git config user name
 - date - current date in local short format
 
-eg. {name} -> MyModule
+eg. `{name}` -> MyModule
