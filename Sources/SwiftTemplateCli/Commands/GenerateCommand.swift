@@ -1,81 +1,59 @@
-//
-//  GenerateCommand.swift
-//  SwiftTemplateCli
-//
-//  Created by Tibor Bodecs on 2020. 04. 19..
-//
-
-import Foundation
-import ConsoleKit
-import PathKit
-import GitKit
+import ArgumentParser
 import SwiftTemplate
 
-final class GenerateCommand: Command {
-    
-    static let name = "generate"
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#if canImport(Foundation)
+import Foundation
+#endif
+#else
+import Foundation
+#endif
 
-    let help = "Generates Swift code based on a given template"
-        
-    struct Signature: CommandSignature {
+struct GenerateCommand: AsyncParsableCommand {
 
-        @Argument(name: "name", help: "The name of the generated product")
-        var name: String
+    static let configuration = CommandConfiguration(
+        commandName: "generate",
+        abstract: "Generates Swift code based on a given template"
+    )
 
-        @Option(name: "use", short: "u", help: "Template name to use")
-        var use: String?
-        
-        @Option(name: "output", short: "o", help: "Generated output path")
-        var output: String?
-    }
+    @Argument(help: "The name of the generated product")
+    var name: String
 
-    func run(using context: CommandContext, signature: Signature) throws {
-        guard let templateName = signature.use else {
-            context.console.error("You have to specify a template name via the --use (-u) option.")
-            return
+    @Option(name: [.customLong("use"), .short], help: "Template name to use")
+    var use: String
+
+    @Option(
+        name: [.customLong("output"), .short],
+        help: "Generated output path"
+    )
+    var output: String?
+
+    mutating func run() async throws {
+        guard let templatePath = CLI.preferredTemplatePath(named: use) else {
+            throw ValidationError(
+                "Invalid template, use the list command to show available options."
+            )
         }
-        let currentPath = Path.current
-        let workPath = Path.home.child(Template.directory)
-        let templatePath = workPath.child(templateName + Template.suffix)
-        let localPath = currentPath.child(Template.directory).child(templateName + Template.suffix)
-        let finalPath = localPath.isDirectory ? localPath : templatePath
-        guard finalPath.isDirectory else {
-            context.console.error("Invalid template, use the list command to show available options.")
-            return
-        }
-        let output = signature.output ?? currentPath.location
-        let outputPath = Path(output)
+
+        let outputPath = output.map(CLI.resolvePath) ?? CLI.currentDirectory
         guard outputPath.isDirectory else {
-            context.console.error("Output path is not a valid directory.")
-            return
+            throw ValidationError("Output path is not a valid directory.")
         }
 
-        let project = currentPath.children()
-            .filter { ["xcodeproj", "xcworkspace"].contains($0.extension) }
-            .map(\.name)
-            .first
-        
-        let author = try? Git().run(.cmd(.config, "--global user.name"))
+        let project = try CLI.projectName(in: CLI.currentDirectory) ?? name
+        let author = await CLI.gitUserName() ?? "swift-template"
 
-        let loadingBar = context.console.customActivity(frames: ["⠋","⠙","⠹","⠸","⠼","⠴","⠦","⠧","⠇","⠏"].map { $0 + " Generating template..."})
-        
-        
-        do {
-            loadingBar.start()
-            let template = Template(input: finalPath.location,
-                                    context: .init(name: signature.name,
-                                                   project: project ?? signature.name,
-                                                   author: author ?? "swift-template"))
-            
-            try template.generate(output: output)
-            loadingBar.succeed()
-        }
-        catch {
-            loadingBar.fail()
-            context.console.error("Error: \(error)")
-        }
+        let template = Template(
+            input: templatePath.pathString,
+            context: .init(
+                name: name,
+                project: project,
+                author: author
+            )
+        )
 
-        
-        
+        try template.generate(output: outputPath.pathString)
+        print("Template generated.")
     }
 }

@@ -1,34 +1,44 @@
-//
-//  ListCommand.swift
-//  SwiftTemplateCli
-//
-//  Created by Tibor Bodecs on 2020. 04. 19..
-//
-
-import Foundation
-import ConsoleKit
-import PathKit
+import ArgumentParser
 import SwiftTemplate
 
-final class ListCommand: Command {
-    
-    static let name = "list"
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#if canImport(Foundation)
+import Foundation
+#endif
+#else
+import Foundation
+#endif
+#if canImport(System)
+import System
+#else
+import SystemPackage
+#endif
 
-    let help = "List installed templates"
-        
-    struct Signature: CommandSignature {}
+struct ListCommand: AsyncParsableCommand {
 
-    func printTemplates(context: CommandContext, at path: Path, style: ConsoleStyle, flag: String = "") {
-        for path in path.children().filter(\.isDirectory).filter(\.isVisible) {
-            let name = path.name.replacingOccurrences(of: Template.suffix, with: "")
-            context.console.output(name + " \(flag)", style: style)
+    static let configuration = CommandConfiguration(
+        commandName: "list",
+        abstract: "List installed templates"
+    )
+
+    private func printTemplates(at path: FilePath, flag: String = "") throws {
+        for path in try path.children().filter(\.isDirectory)
+            .filter(\.isVisible).sorted(by: { $0.name < $1.name })
+        {
+            let name = path.name.replacingOccurrences(
+                of: Template.suffix,
+                with: ""
+            )
+            print(flag.isEmpty ? name : "\(name) \(flag)")
         }
     }
 
-    func run(using context: CommandContext, signature: Signature) throws {
-        let workPath = Path.home.child(Template.directory)
-        let localPath = Path.current.child(Template.directory)
-        printTemplates(context: context, at: localPath, style: .success)
-        printTemplates(context: context, at: workPath, style: .info, flag: "(global)")
+    mutating func run() async throws {
+        try printTemplates(at: CLI.templatesDirectory(global: false))
+        try printTemplates(
+            at: CLI.templatesDirectory(global: true),
+            flag: "(global)"
+        )
     }
 }

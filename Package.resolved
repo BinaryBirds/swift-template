@@ -1,70 +1,33 @@
 {
-  "object": {
-    "pins": [
-      {
-        "package": "build-kit",
-        "repositoryURL": "https://github.com/binarybirds/build-kit",
-        "state": {
-          "branch": null,
-          "revision": "2486ca18914f1c71f4b77a51ba59a866c366f35a",
-          "version": "1.0.0"
-        }
-      },
-      {
-        "package": "console-kit",
-        "repositoryURL": "https://github.com/vapor/console-kit",
-        "state": {
-          "branch": null,
-          "revision": "7a97a5ea7fefe61cf2c943242113125b0f396a98",
-          "version": "4.1.0"
-        }
-      },
-      {
-        "package": "git-kit",
-        "repositoryURL": "https://github.com/binarybirds/git-kit",
-        "state": {
-          "branch": null,
-          "revision": "860b85ef020a243656b6f205cf304768589d7f6a",
-          "version": "1.0.0"
-        }
-      },
-      {
-        "package": "path-kit",
-        "repositoryURL": "https://github.com/binarybirds/path-kit",
-        "state": {
-          "branch": null,
-          "revision": "b0bdf92e943158ceee9deb8eccdac445069a6ff0",
-          "version": "1.0.1"
-        }
-      },
-      {
-        "package": "plural-kit",
-        "repositoryURL": "https://github.com/binarybirds/plural-kit.git",
-        "state": {
-          "branch": null,
-          "revision": "0bbac9a39a1a89187aebb8684420ca3f10036770",
-          "version": "1.0.0"
-        }
-      },
-      {
-        "package": "shell-kit",
-        "repositoryURL": "https://github.com/binarybirds/shell-kit",
-        "state": {
-          "branch": null,
-          "revision": "f4c31aad2e45898b7655ee30bdb9a1e7f427438a",
-          "version": "1.0.0"
-        }
-      },
-      {
-        "package": "swift-log",
-        "repositoryURL": "https://github.com/apple/swift-log.git",
-        "state": {
-          "branch": null,
-          "revision": "74d7b91ceebc85daf387ebb206003f78813f71aa",
-          "version": "1.2.0"
-        }
+  "originHash" : "d508f93c0b8ada3c7790b78f4929a2fee0b3015724625b038293765628790ae2",
+  "pins" : [
+    {
+      "identity" : "swift-argument-parser",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-argument-parser",
+      "state" : {
+        "revision" : "6a52f3251125d74daf04fcbd5e6f08a75d074382",
+        "version" : "1.8.2"
       }
-    ]
-  },
-  "version": 1
+    },
+    {
+      "identity" : "swift-subprocess",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-subprocess",
+      "state" : {
+        "revision" : "11633673a41f509f8945f23c96c7acd4adafd679",
+        "version" : "0.5.0"
+      }
+    },
+    {
+      "identity" : "swift-system",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-system",
+      "state" : {
+        "revision" : "7502b711c92a17741fa625d722b0ccbd595d8ed1",
+        "version" : "1.7.2"
+      }
+    }
+  ],
+  "version" : 3
 }
