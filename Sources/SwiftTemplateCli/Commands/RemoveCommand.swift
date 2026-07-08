@@ -1,61 +1,55 @@
-//
-//  RemoveCommand.swift
-//  SwiftTemplateCli
-//
-//  Created by Tibor Bodecs on 2020. 04. 19..
-//
-
-import Foundation
-import ConsoleKit
-import PathKit
+import ArgumentParser
 import SwiftTemplate
 
-final class RemoveCommand: Command {
-    
-    static let name = "remove"
+#if canImport(System)
+import System
+#else
+import SystemPackage
+#endif
 
-    let help = "Removes an installed template"
-        
-    struct Signature: CommandSignature {
+struct RemoveCommand: AsyncParsableCommand {
 
-        @Argument(name: "name", help: "The name of the template")
-        var name: String
-    }
+    static let configuration = CommandConfiguration(
+        commandName: "remove",
+        abstract: "Removes an installed template"
+    )
 
-    func removeTemplate(at path: Path, using context: CommandContext) throws {
-        let yes = context.console.ask("Remove `\(path.location)`? (y/n)".consoleText(.info))
-        guard yes == "y" else {
-            context.console.warning("Skipping template removal.")
+    @Argument(help: "The name of the template")
+    var name: String
+
+    private func removeTemplate(at path: FilePath) throws {
+        let answer = CLI.prompt("Remove `\(path.pathString)`? [y/N]")
+        guard answer?.lowercased() == "y" else {
+            print("Skipping template removal.")
             return
         }
-        do {
-            try path.delete()
-            context.console.success("Template removed.")
-        }
-        catch {
-            context.console.error("Error: \(error.localizedDescription)")
-        }
+
+        try path.removeFromDisk()
+        print("Template removed.")
     }
 
-    func run(using context: CommandContext, signature: Signature) throws {
-        let templateName = signature.name + Template.suffix
-        let globalPath = Path.home.child(Template.directory).child(templateName)
-        let localPath = Path.current.child(Template.directory).child(templateName)
-        
-        var toRemove: [Path] = []
+    mutating func run() async throws {
+        let templateName = name + Template.suffix
+        let localPath = CLI.templatesDirectory(global: false)
+            .appending(templateName)
+        let globalPath = CLI.templatesDirectory(global: true)
+            .appending(templateName)
+
+        var toRemove: [FilePath] = []
         if localPath.isDirectory {
             toRemove.append(localPath)
         }
         if globalPath.isDirectory {
             toRemove.append(globalPath)
         }
+
         guard !toRemove.isEmpty else {
-            context.console.info("No such template.")
+            print("No such template.")
             return
         }
+
         for path in toRemove {
-            try removeTemplate(at: path, using: context)
+            try removeTemplate(at: path)
         }
     }
-
 }

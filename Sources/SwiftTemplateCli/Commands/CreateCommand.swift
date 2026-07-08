@@ -1,49 +1,56 @@
-//
-//  CreateCommand.swift
-//  SwiftTemplateCli
-//
-//  Created by Tibor Bodecs on 2020. 04. 19..
-//
-
-import Foundation
-import ConsoleKit
-import GitKit
-import PathKit
-import ShellKit
+import ArgumentParser
 import SwiftTemplate
 
-final class CreateCommand: Command {
-    
-    static let name = "create"
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#if canImport(Foundation)
+import Foundation
+#endif
+#else
+import Foundation
+#endif
+#if canImport(System)
+import System
+#else
+import SystemPackage
+#endif
 
-    let help = "Create a new Swift template"
-        
-    struct Signature: CommandSignature {
+struct CreateCommand: AsyncParsableCommand {
 
-        @Argument(name: "name", help: "The name of the template")
-        var name: String
-        
-        @Flag(name: "global", short: "g", help: "Template name to use")
-        var global: Bool
-    }
+    static let configuration = CommandConfiguration(
+        commandName: "create",
+        abstract: "Create a new Swift template"
+    )
 
-    func run(using context: CommandContext, signature: Signature) throws {
-        var path = Path.current.child(Template.directory)
-        if signature.global {
-            path = Path.home.child(Template.directory)
+    @Argument(help: "The name of the template")
+    var name: String
+
+    @Flag(
+        name: [.customLong("global"), .short],
+        help: "Create the template in the global template directory"
+    )
+    var global = false
+
+    mutating func run() async throws {
+        let templatesDirectory = CLI.templatesDirectory(global: global)
+        let templatePath = templatesDirectory.appending(name + Template.suffix)
+
+        guard !templatePath.exists else {
+            throw ValidationError(
+                "Template already exists at \(templatePath.pathString)."
+            )
         }
-        let templatePath = path.child(signature.name + Template.suffix)
-        print(templatePath.location)
-        let git = Git(path: templatePath.location)
-        let sh = Shell()
-        do {
-            let readme = """
-            \"# \(signature.name)\"
+
+        try templatesDirectory.createDirectoryIfNeeded()
+        try templatePath.createDirectoryIfNeeded()
+
+        let readme = """
+            # \(name)
 
             A basic Swift template.
-            
+
             You can use the following parameters by default (even in file names):
-            
+
                 * {module} - name of the generated module
                 * {project} - project name
                 * {author} - author name
@@ -53,21 +60,31 @@ final class CreateCommand: Command {
 
                 * git remote add origin [url]
                 * git push -u origin master
-            
+
             You can ignore files from the template by adding them to the \(Template.ignoreFile) file.
             """
 
-            try git.run(.cmd(.initialize))
-            try sh.run("cd \(templatePath.location) && echo \"README.md\" > \(Template.ignoreFile)")
-            try sh.run("cd \(templatePath.location) && echo \"\(readme)\" > README.md")
-            
-            context.console.info("Template ready at: \(templatePath.location)")
-            #if os(macOS)
-            try sh.run("open -a Finder \(templatePath.location)")
-            #endif
-        }
-        catch {
-            context.console.error(error.localizedDescription)
-        }
+        try Template.ignoreFile.write(
+            to: templatePath.appending(Template.ignoreFile).fileURL,
+            atomically: true,
+            encoding: .utf8
+        )
+        try readme.write(
+            to: templatePath.appending("README.md").fileURL,
+            atomically: true,
+            encoding: .utf8
+        )
+
+        _ = try await CLI.runCommand(
+            "git",
+            arguments: ["init"],
+            workingDirectory: templatePath
+        )
+
+        print("Template ready at: \(templatePath.pathString)")
+
+        #if os(macOS)
+        try? await CLI.openInFinder(templatePath)
+        #endif
     }
 }

@@ -1,79 +1,153 @@
-//
-//  SwiftTemplateTests.swift
-//  SwiftTemplateTests
-//
-//  Created by Tibor Bodecs on 2020. 04. 19..
-//
+import Testing
 
-import XCTest
-import PathKit
 @testable import SwiftTemplate
 
-final class SwiftTemplateTests: XCTestCase {
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#if canImport(Foundation)
+import Foundation
+#endif
+#else
+import Foundation
+#endif
+#if canImport(System)
+import System
+#else
+import SystemPackage
+#endif
 
-    var baseUrl: String { "/" + #file.split(separator: "/").dropLast(2).joined(separator: "/") }
- 
-    // MARK: - test cases
-    
-    func testCapitalizedFirstCharacter() throws {
+struct SwiftTemplateTests {
+
+    @Test
+    func capitalizedFirstCharacter() {
         let name = "myProject"
-        XCTAssertEqual(name.capitalizedFirstCharacter, "MyProject")
+        #expect(name.capitalizedFirstCharacter == "MyProject")
     }
-    
-    // TC: 001
-    func testContextRendering() throws {
-        /// setup work paths
-        let input = baseUrl + "/Templates/001"
-        let output = baseUrl + "/Results/001"
 
-        /// cleanup output folder before we start
-        try Path(output).delete()
-        
-        /// create and generate the template with a given test context
-        let template = Template(input: input, context: .init(name: "test", project: "test", author: "test author"))
-        try template.generate(output: output)
+    @Test
+    func contextRendering() throws {
+        let inputPath =
+            repoRoot
+            .appending("Tests")
+            .appending("Templates")
+            .appending("001")
 
-        let outputPath = Path(output)
-        
-        /// check if template was created
-        XCTAssertEqual(outputPath.children().map(\.name), ["Test"])
+        let outputPath = FilePath(
+            FileManager.default.temporaryDirectory
+                .appendingPathComponent(
+                    "swift-template-tests-\(UUID().uuidString)"
+                )
+                .path
+        )
 
-        /// check if test directory was created inside the result project with the right name
-        let resultPath = outputPath.child("test")
-        XCTAssertTrue(resultPath.isDirectory)
-        XCTAssertEqual(resultPath.children().map(\.name), ["test"])
+        defer {
+            try? outputPath.removeIfExists()
+        }
 
-        /// check if template file was created with the right name
-        let filePath = resultPath.child("test").child("Test.swift")
-        XCTAssertTrue(filePath.isFile)
-        
+        let renderDate = Date(timeIntervalSince1970: 0)
+        let template = Template(
+            input: inputPath.pathString,
+            context: .init(
+                name: "test",
+                project: "test",
+                author: "test author",
+                date: renderDate
+            )
+        )
+
+        try template.generate(output: outputPath.pathString)
+
+        let generatedRoot = outputPath.appending("Test")
+        #expect(generatedRoot.isDirectory)
+        #expect(try outputPath.visibleChildNames() == ["Test"])
+
+        let resultPath = generatedRoot.appending("test")
+        #expect(resultPath.isDirectory)
+        #expect(try generatedRoot.visibleChildNames() == ["test"])
+
+        let filePath = resultPath.appending("Test.swift")
+        #expect(filePath.isFile)
+
         let formatter = DateFormatter()
         formatter.dateStyle = .short
         formatter.timeStyle = .none
-        let dateString = formatter.string(from: Date())
+        let dateString = formatter.string(from: renderDate)
 
         let expectedContents = """
-        //
-        //  TestBuilder.swift
-        //  test
-        //
-        //  Created by test author on \(dateString).
-        //
+            //
+            //  TestBuilder.swift
+            //  test
+            //
+            //  Created by test author on \(dateString).
+            //
 
-        import Foundation
+            #if canImport(FoundationEssentials)
+            import FoundationEssentials
+            #if canImport(Foundation)
+            import Foundation
+            #endif
+            #else
+            import Foundation
+            #endif
 
-        struct TEST {
-            let test: String
+            struct TEST {
+                let test: String
+            }
+
+            """
+
+        let contents = try String(contentsOf: filePath.fileURL, encoding: .utf8)
+        #expect(contents == expectedContents)
+    }
+
+    private var repoRoot: FilePath {
+        var path = FilePath(#filePath)
+        path.removeLastComponent()
+        path.removeLastComponent()
+        path.removeLastComponent()
+        return path
+    }
+}
+
+extension FilePath {
+
+    fileprivate var pathString: String {
+        String(describing: self)
+    }
+
+    fileprivate var fileURL: URL {
+        URL(fileURLWithPath: pathString)
+    }
+
+    fileprivate var isDirectory: Bool {
+        var isDirectory = ObjCBool(false)
+        let exists = FileManager.default.fileExists(
+            atPath: pathString,
+            isDirectory: &isDirectory
+        )
+        return exists && isDirectory.boolValue
+    }
+
+    fileprivate var isFile: Bool {
+        var isDirectory = ObjCBool(false)
+        let exists = FileManager.default.fileExists(
+            atPath: pathString,
+            isDirectory: &isDirectory
+        )
+        return exists && !isDirectory.boolValue
+    }
+
+    fileprivate func visibleChildNames() throws -> [String] {
+        try FileManager.default
+            .contentsOfDirectory(atPath: pathString)
+            .filter { !$0.hasPrefix(".") }
+            .sorted()
+    }
+
+    fileprivate func removeIfExists() throws {
+        guard FileManager.default.fileExists(atPath: pathString) else {
+            return
         }
-
-        """
-        
-        let contents = try String(contentsOf: filePath.url)
-        
-        /// check if the context variables were properly replaced in the template file
-        XCTAssertEqual(contents, expectedContents)
-        
-        /// cleanup output folder
-        try Path(output).delete()
+        try FileManager.default.removeItem(at: fileURL)
     }
 }

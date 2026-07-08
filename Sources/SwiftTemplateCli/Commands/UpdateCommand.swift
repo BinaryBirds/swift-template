@@ -1,41 +1,51 @@
-//
-//  UpdateCommand.swift
-//  SwiftTemplateCli
-//
-//  Created by Tibor Bodecs on 2020. 04. 20..
-//
-
-import Foundation
-import ConsoleKit
-import PathKit
-import GitKit
+import ArgumentParser
 import SwiftTemplate
 
-final class UpdateCommand: Command {
-    
-    static let name = "update"
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#if canImport(Foundation)
+import Foundation
+#endif
+#else
+import Foundation
+#endif
+#if canImport(System)
+import System
+#else
+import SystemPackage
+#endif
 
-    let help = "Update installed templates"
-        
-    struct Signature: CommandSignature {}
+struct UpdateCommand: AsyncParsableCommand {
 
-    func run(using context: CommandContext, signature: Signature) throws {
-        let workPath = Path.home.child(Template.directory)
-        let localPath = Path.current.child(Template.directory)
-        let templates = localPath.children() + workPath.children()
-        let loadingBar = context.console.customActivity(frames: ["⠋","⠙","⠹","⠸","⠼","⠴","⠦","⠧","⠇","⠏"].map { $0 + " Updating templates..."})
-        loadingBar.start()
-        for path in templates.filter(\.isDirectory).filter(\.isVisible) {
-            let git = Git(path: path.location)
+    static let configuration = CommandConfiguration(
+        commandName: "update",
+        abstract: "Update installed templates"
+    )
+
+    mutating func run() async throws {
+        let templates =
+            try CLI.templatesDirectory(global: false).children()
+            + CLI.templatesDirectory(global: true).children()
+
+        for path in templates.filter(\.isDirectory).filter(\.isVisible)
+            .sorted(by: { $0.name < $1.name })
+        {
             do {
-                try git.run(.cmd(.pull))
-                loadingBar.succeed()
-                let name = path.url.lastPathComponent.replacingOccurrences(of: Template.suffix, with: "")
-                context.console.info("Template `\(name)` updated.")
+                _ = try await CLI.runCommand(
+                    "git",
+                    arguments: ["pull"],
+                    workingDirectory: path
+                )
+                let name = path.name.replacingOccurrences(
+                    of: Template.suffix,
+                    with: ""
+                )
+                print("Template `\(name)` updated.")
             }
             catch {
-                loadingBar.fail()
-                context.console.error("Error: \(error.localizedDescription)")
+                throw CLIError.message(
+                    "Failed to update `\(path.name)`: \(error.localizedDescription)"
+                )
             }
         }
     }
